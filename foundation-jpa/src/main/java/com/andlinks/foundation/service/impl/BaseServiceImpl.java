@@ -3,14 +3,20 @@ package com.andlinks.foundation.service.impl;
 import com.andlinks.foundation.dao.BaseDao;
 import com.andlinks.foundation.entity.BaseEntity;
 import com.andlinks.foundation.service.BaseService;
+import com.andlinks.foundation.service.Condition;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -165,11 +171,102 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
     }
 
     @Override
+    public Page<T> findPage(Pageable pageable, Condition... conditions) {
+
+        return baseDao.findAll(new Specification<T>() {
+            @Override
+            public Predicate toPredicate(Root<T> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+
+                return generate(root, criteriaBuilder, conditions);
+            }
+        }, pageable);
+    }
+
+    private Predicate generate(Root<T> root, CriteriaBuilder criteriaBuilder, Condition... conditions) {
+        Predicate predicate = criteriaBuilder.conjunction();
+        if (conditions == null) {
+            return predicate;
+        }
+        for (Condition condition : conditions) {
+
+            String attribute = condition.getAttribute();
+            Object value = condition.getValue();
+            Comparable comparableValue = condition.getComparableValue();
+
+            switch (condition.getType()) {
+                case EQUAL:
+                    predicate.getExpressions().add(
+                            criteriaBuilder.equal(root.get(attribute), value));
+                    break;
+                case UNEQUAL:
+                    predicate.getExpressions().add(
+                            criteriaBuilder.notEqual(root.get(attribute), value));
+                    break;
+                case GREATER:
+                    predicate.getExpressions().add(
+                            criteriaBuilder.greaterThan(root.get(attribute), comparableValue));
+                    break;
+                case GE:
+                    predicate.getExpressions().add(
+                            criteriaBuilder.greaterThanOrEqualTo(root.get(attribute), comparableValue));
+                    break;
+                case LESS:
+                    predicate.getExpressions().add(
+                            criteriaBuilder.lessThan(root.get(attribute), comparableValue));
+                    break;
+                case LE:
+                    predicate.getExpressions().add(
+                            criteriaBuilder.lessThanOrEqualTo(root.get(attribute), comparableValue));
+                    break;
+                case LIKE:
+                    predicate.getExpressions().add(
+                            criteriaBuilder.like(root.get(attribute), "%" + value + "%"));
+                    break;
+                case SEARCH:
+                    String[] searchAttributes = condition.getSearchAttributes();
+                    Predicate[] predicates = new Predicate[searchAttributes.length];
+
+                    for (int i = 0; i < predicates.length; i++) {
+                        predicates[i] = criteriaBuilder.like(root.get(searchAttributes[i]), "%" + value + "%");
+                    }
+                    predicate.getExpressions().add(criteriaBuilder.or(predicates));
+                    break;
+            }
+        }
+        return predicate;
+    }
+
+    @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void delete(Long[] ids) {
 
         for (Long id : ids) {
             delete(id);
         }
+    }
+
+    @Override
+    public List<T> findList(Condition... conditions) {
+        return baseDao.findAll(new Specification<T>() {
+            @Override
+            public Predicate toPredicate(Root<T> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+                return generate(root, criteriaBuilder, conditions);
+            }
+        });
+    }
+
+    @Override
+    public Long count() {
+        return baseDao.count();
+    }
+
+    @Override
+    public Long count(Condition... conditions) {
+        return baseDao.count(new Specification<T>() {
+            @Override
+            public Predicate toPredicate(Root<T> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+                return generate(root, criteriaBuilder, conditions);
+            }
+        });
     }
 }

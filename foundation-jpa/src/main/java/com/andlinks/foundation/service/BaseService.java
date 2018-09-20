@@ -18,6 +18,8 @@ public interface BaseService<T extends BaseEntity> {
 
     List<T> findList(Long[] ids);
 
+    List<T> findList(Condition... conditions);
+
     Set<T> findSet(Long[] ids);
 
     Boolean exists(Long id);
@@ -37,6 +39,12 @@ public interface BaseService<T extends BaseEntity> {
 
     Page<T> findPage(Pageable pageable);
 
+    Page<T> findPage(Pageable pageable, Condition... conditions);
+
     void delete(Long[] ids);
+
+    Long count();
+
+    Long count(Condition... conditions);
 
 }
