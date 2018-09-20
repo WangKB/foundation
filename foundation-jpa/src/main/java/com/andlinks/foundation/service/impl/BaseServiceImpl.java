@@ -18,6 +18,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -268,5 +269,35 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
                 return generate(root, criteriaBuilder, conditions);
             }
         });
+    }
+
+    @Override
+    public <AT> List<AT> getAttributesList(String attributeName) throws NoSuchFieldException, IllegalAccessException {
+
+        List<T> list = new ArrayList<>();
+        baseDao.findAll().forEach(list::add);
+        return getResult(attributeName, list);
+    }
+
+    @Override
+    public <AT> List<AT> getAttributesList(String attributeName, Condition... conditions) throws NoSuchFieldException, IllegalAccessException {
+        List<T> list = new ArrayList<>();
+        baseDao.findAll(new Specification<T>() {
+            @Override
+            public Predicate toPredicate(Root<T> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+                return generate(root, criteriaBuilder, conditions);
+            }
+        }).forEach(list::add);
+        return getResult(attributeName, list);
+    }
+
+    private <AT> List<AT> getResult(String attributeName, List<T> list) throws NoSuchFieldException, IllegalAccessException {
+
+        List<AT> result = new ArrayList<>();
+        for (T t : list) {
+            Field field = t.getClass().getDeclaredField(attributeName);
+            result.add((AT) field.get(t));
+        }
+        return result;
     }
 }
