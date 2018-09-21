@@ -47,8 +47,8 @@ public interface BaseService<T extends BaseEntity> {
 
     Long count(Condition... conditions);
 
-    <AT> List<AT> getAttributesList(String attributeName) throws NoSuchFieldException, IllegalAccessException;
+    <AT> List<AT> getAttributesList(String attributeName);
 
-    <AT> List<AT> getAttributesList(String attributeName, Condition... conditions) throws NoSuchFieldException, IllegalAccessException;
+    <AT> List<AT> getAttributesList(String attributeName, Condition... conditions);
 
 }

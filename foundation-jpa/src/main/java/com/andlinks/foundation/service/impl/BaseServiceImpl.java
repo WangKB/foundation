@@ -6,6 +6,8 @@ import com.andlinks.foundation.service.BaseService;
 import com.andlinks.foundation.service.Condition;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ import java.util.*;
  */
 public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
 
+    private final Logger logger = LoggerFactory.getLogger(BaseServiceImpl.class);
     /**
      * 更新忽略属性
      */
@@ -272,7 +275,7 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
     }
 
     @Override
-    public <AT> List<AT> getAttributesList(String attributeName) throws NoSuchFieldException, IllegalAccessException {
+    public <AT> List<AT> getAttributesList(String attributeName) {
 
         List<T> list = new ArrayList<>();
         baseDao.findAll().forEach(list::add);
@@ -280,7 +283,7 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
     }
 
     @Override
-    public <AT> List<AT> getAttributesList(String attributeName, Condition... conditions) throws NoSuchFieldException, IllegalAccessException {
+    public <AT> List<AT> getAttributesList(String attributeName, Condition... conditions) {
         List<T> list = new ArrayList<>();
         baseDao.findAll(new Specification<T>() {
             @Override
@@ -291,13 +294,18 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
         return getResult(attributeName, list);
     }
 
-    private <AT> List<AT> getResult(String attributeName, List<T> list) throws NoSuchFieldException, IllegalAccessException {
+    private <AT> List<AT> getResult(String attributeName, List<T> list) {
 
         List<AT> result = new ArrayList<>();
-        for (T t : list) {
-            Field field = t.getClass().getDeclaredField(attributeName);
-            result.add((AT) field.get(t));
+        try {
+            for (T t : list) {
+                Field field = t.getClass().getDeclaredField(attributeName);
+                result.add((AT) field.get(t));
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            logger.error("服务器内部错误，请联系管理员", e);
         }
+
         return result;
     }
 }

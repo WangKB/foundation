@@ -2,7 +2,7 @@ package com.andlinks.foundation.service;
 
 import java.util.List;
 
-public class Condition<AT> {
+public class Condition {
 
     public enum ConditionType {
         EQUAL,
