@@ -14,6 +14,8 @@ public interface BaseService<T extends BaseEntity> {
 
     T find(Long id);
 
+    T find(Condition... conditions);
+
     List<T> findAll();
 
     List<T> findList(Long[] ids);

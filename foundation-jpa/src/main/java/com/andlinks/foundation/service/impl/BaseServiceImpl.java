@@ -53,6 +53,16 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
     }
 
     @Override
+    public T find(Condition... conditions) {
+
+        List<T> list = findList(conditions);
+        if (list.size() == 0) {
+            return null;
+        }
+        return list.get(0);
+    }
+
+    @Override
     public List<T> findAll() {
 
         List<T> result = new ArrayList<T>();
