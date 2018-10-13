@@ -310,6 +310,7 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
         try {
             for (T t : list) {
                 Field field = t.getClass().getDeclaredField(attributeName);
+                field.setAccessible(true);
                 result.add((AT) field.get(t));
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
