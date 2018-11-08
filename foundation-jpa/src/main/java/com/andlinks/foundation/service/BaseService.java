@@ -3,6 +3,7 @@ package com.andlinks.foundation.service;
 import com.andlinks.foundation.entity.BaseEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Set;
@@ -17,6 +18,8 @@ public interface BaseService<T extends BaseEntity> {
     T find(Condition... conditions);
 
     List<T> findAll();
+
+    List<T> sortList(Sort sort, Condition... conditions);
 
     List<T> findList(Long[] ids);
 

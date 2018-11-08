@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,6 +62,22 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
         }
         return list.get(0);
     }
+
+    @Override
+    public List<T> sortList(Sort sort,Condition... conditions) {
+
+        List<T> list = baseDao.findAll(new Specification<T>() {
+            @Override
+            public Predicate toPredicate(Root<T> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+                return null;
+            }
+        },sort);
+        if (list.size() == 0) {
+            return null;
+        }
+        return list;
+    }
+
 
     @Override
     public List<T> findAll() {
