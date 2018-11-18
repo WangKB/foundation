@@ -220,6 +220,9 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
         }
         for (Condition condition : conditions) {
 
+            if(condition==null){
+                continue;
+            }
             String attribute = condition.getAttribute();
             Object value = condition.getValue();
             Comparable comparableValue = condition.getComparableValue();
