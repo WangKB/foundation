@@ -69,7 +69,7 @@ public class BaseServiceImpl<T extends BaseEntity> implements BaseService<T> {
         List<T> list = baseDao.findAll(new Specification<T>() {
             @Override
             public Predicate toPredicate(Root<T> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
-                return null;
+                return generate(root, criteriaBuilder, conditions);
             }
         },sort);
         if (list.size() == 0) {
